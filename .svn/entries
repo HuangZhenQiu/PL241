@@ -1,0 +1,58 @@
+8
+
+dir
+7970
+http://link.eecs.uci.edu/svn/zhenqiuh/PL241
+http://link.eecs.uci.edu/svn
+
+
+
+2014-01-14T18:53:07.225288Z
+7970
+zhenqiuh
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+2e127353-9723-0410-9baa-fc3a6e43012a
+
+.classpath
+file
+7971
+
+
+
+2014-01-14T18:58:40.000000Z
+0feefca3562e5167ed8224d805b3b922
+2014-01-14T18:53:17.601646Z
+7971
+zhenqiuh
+
+.project
+file
+7971
+
+
+
+2014-01-14T18:58:40.000000Z
+f731704e443d84cbc009b75f916551f9
+2014-01-14T18:53:17.601646Z
+7971
+zhenqiuh
+
+.settings
+dir
+
+src
+dir
+

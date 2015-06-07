@@ -1,0 +1,19 @@
+package edu.uci.eecs.compiler.dlx;
+
+import edu.uci.eecs.compiler.model.Program;
+
+public class CodeGenerator {
+
+	private Program program;
+	private GlobalDataLayout globalLayout;
+	
+	public CodeGenerator(Program program, GlobalDataLayout globalLayout) {
+		this.program = program;
+		this.globalLayout = globalLayout;
+	}
+	
+	public void generateCode() {
+		
+	}
+
+}

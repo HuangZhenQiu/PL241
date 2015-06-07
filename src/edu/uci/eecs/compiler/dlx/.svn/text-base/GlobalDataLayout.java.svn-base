@@ -1,0 +1,45 @@
+package edu.uci.eecs.compiler.dlx;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import edu.uci.eecs.compiler.representation.SymbolTable;
+
+/**
+ * 
+ * Calculate memory layout for static global valuables;
+ * 
+ * |Variabels ......| Arrays ....
+ * 
+ * @author Peter
+ *
+ */
+public class GlobalDataLayout {
+	
+	private List<String> variables;
+	private List<String> arrays;
+	private HashMap<String, Integer> arrayBaseMap;
+	
+	public GlobalDataLayout(SymbolTable table){
+		this.variables = table.getVariables();
+		this.arrays = table.getArrays();
+		this.arrayBaseMap = new HashMap<String, Integer>();
+		
+		int base = variables.size();
+		
+		for(String array : this.arrays) {
+			arrayBaseMap.put(array, base);
+			base += table.getArraySize(array);
+		}
+	}
+	
+	public int getVariableOffset(String name) {
+		return variables.indexOf(name);
+	}
+	
+	public int getArrayBase(String name) {
+		return arrayBaseMap.get(name);
+	}
+
+}

@@ -1,0 +1,54 @@
+digraph foo {
+	subgraph cluster1{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 1";
+"start1" ->"8 := Branch Block 2 " -> "end1";}
+	subgraph cluster2{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 2";
+"start2" ->"9 := 0 ADD 1\l10 := 9 TIMES 9\l11 := 0 ADD 9\l12 := 10 ADD 9\l13 := 12 LESS 9\l14 := Branch on 13 -> Block 4 | Block 5 " -> "end2";}
+	subgraph cluster3{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 3";
+"start3" ->"43 := Return " -> "end3";}
+	subgraph cluster4{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 4";
+"start4" ->"15 := Constant 1\l16 := 10 ADD 15\l17 := Branch JoinBlock 6 " -> "end4";}
+	subgraph cluster5{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 5";
+"start5" ->"18 := 9 MINUS 10\l19 := 18 LESS 12\l20 := Branch on 19 -> Block 7 | Block 8 " -> "end5";}
+	subgraph cluster6{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 6";
+"start6" ->"25 := Phi f{(4.11)(9.18)}\l26 := Phi c{(4.9)(9.21)}\l27 := 10 TIMES 12\l28 := Write 12\l29 :=  Call OutputNum\l30 := Write 27\l31 :=  Call OutputNum\l32 := Write 26\l33 :=  Call OutputNum\l34 := Write 9\l35 :=  Call OutputNum\l36 := Write 25\l37 :=  Call OutputNum\l38 := Write 10\l39 :=  Call OutputNum\l40 := Write 16\l41 :=  Call OutputNum\l42 := Branch ExitBlock 3 " -> "end6";}
+	subgraph cluster7{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 7";
+"start7" ->"21 := Constant 2\l22 := Branch JoinBlock 9 " -> "end7";}
+	subgraph cluster8{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 8";
+"start8" ->"23 := Branch JoinBlock 9 " -> "end8";}
+	subgraph cluster9{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 9";
+"start9" ->"24 := Branch JoinBlock 6 " -> "end9";}
+"end1" -> "start2" [ltail=cluster1 lhead=cluster2];
+"end2" -> "start4" [ltail=cluster2 lhead=cluster4];
+"end2" -> "start5" [ltail=cluster2 lhead=cluster5];
+"end4" -> "start6" [ltail=cluster4 lhead=cluster6];
+"end5" -> "start7" [ltail=cluster5 lhead=cluster7];
+"end5" -> "start8" [ltail=cluster5 lhead=cluster8];
+"end6" -> "start3" [ltail=cluster6 lhead=cluster3];
+"end7" -> "start9" [ltail=cluster7 lhead=cluster9];
+"end8" -> "start9" [ltail=cluster8 lhead=cluster9];
+"end9" -> "start6" [ltail=cluster9 lhead=cluster6];
+}
+
+digraph main {
+	subgraph cluster0{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 0";
+"start0" ->"44 := Branch Block 10 " -> "end0";}
+	subgraph cluster10{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 10";
+"start10" ->"45 :=  Call foo\l46 := Branch ExitBlock 11 " -> "end10";}
+	subgraph cluster11{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 11";
+"start11" ->"47 := Return " -> "end11";}
+"end0" -> "start10" [ltail=cluster0 lhead=cluster10];
+"end10" -> "start11" [ltail=cluster10 lhead=cluster11];
+}
+

@@ -1,0 +1,14 @@
+digraph main {
+	subgraph cluster0{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 0";
+"start0" ->"1 := Store Variable xValue 0\l3 := Store Variable yValue 2\l4 := Branch Block 1 " -> "end0";}
+	subgraph cluster1{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 1";
+"start1" ->"5 := Constant 51\l6 := Store Variable xValue 5\l7 := Constant 2\l8 := LoadVariablex\l9 := 7 TIMES 8\l10 := Store Variable yValue 9\l11 := Branch ExitBlock 2\l12 := LoadVariabley\l13 := Write 12\l14 :=  Call OutputNum\l15 := Writeln \l16 :=  Call OutputNewLine " -> "end1";}
+	subgraph cluster2{ style=filled; color=yellow; node [fontsize = 12, shape=box, align=left]; 
+label = "block 2";
+"start2" ->"17 := Return " -> "end2";}
+"end0" -> "start1" [ltail=cluster0 lhead=cluster1];
+"end1" -> "start2" [ltail=cluster1 lhead=cluster2];
+}
+

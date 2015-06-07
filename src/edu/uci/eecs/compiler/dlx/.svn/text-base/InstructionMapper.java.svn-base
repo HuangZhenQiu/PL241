@@ -1,0 +1,203 @@
+package edu.uci.eecs.compiler.dlx;
+
+import java.util.List;
+import java.util.ArrayList;
+import java.lang.RuntimeException;
+
+import edu.uci.eecs.compiler.representation.InstructionBaseVisitor;
+import edu.uci.eecs.compiler.representation.SSAInstruction;
+import edu.uci.eecs.compiler.representation.SSAInstruction.*;
+import edu.uci.eecs.compiler.register.Location;
+import edu.uci.eecs.compiler.util.ComputationOperatorType;
+import edu.uci.eecs.compiler.util.ComparsionOperatorType;
+import static edu.uci.eecs.compiler.dlx.RegisterMap.*;
+
+public class InstructionMapper extends InstructionBaseVisitor {
+	
+	private Assembler assembler;
+	private List<Integer> code;
+	private List<Integer> instructionIds;
+	private GlobalDataLayout layout;
+	private Location[] locations;   // location allocated for each SSAInstruction
+	private CodeEmitter emitter;
+	
+	private int wordSize = 4;
+	static int fp = framePointerReg;
+	static int sp = stackPointerReg;
+	static int sr = scratchReg;
+	static int sr2= secondScratchReg;
+	
+	public InstructionMapper(Assembler assembler, GlobalDataLayout layout, Location[] location) {
+		this.assembler = assembler;
+		this.code = new ArrayList<Integer>();
+		this.instructionIds = new ArrayList<Integer>();
+		this.emitter = new CodeEmitter(code);
+		this.layout = layout;
+	}
+	
+	private void addInstructionId(SSAInstruction instruction) {
+		this.instructionIds.add(instruction.getInstructionId());
+	}
+	
+	@Override
+	public void visit(ConstantSSAInstruction instruction) {
+		Location location = locations[instruction.getInstructionId()];
+		if (location.isRegister()) {
+			emitter.movi2r(location.getRegister(), instruction.getValue());
+		} else {
+			emitter.movi2s(location.getStackSlot(), instruction.getValue());
+		}
+	}
+	
+	@Override
+	public void visit(ComputationSSAInstruction instruction) {
+		Location left = locations[instruction.getLeftOperand().getInstructionId()];
+		Location right = locations[instruction.getRightOperand().getInstructionId()];
+		Location result = locations[instruction.getInstructionId()];
+		
+		if (result.isRegister()) {
+			computationToRegister(instruction.getType(), result.getRegister(), left, right);
+		} else {
+			computationToRegister(instruction.getType(), sr, left, right);
+			emitter.movr2s(result.getStackSlot(), sr);
+		}
+
+	}
+	
+	private void computationToRegister(ComputationOperatorType type, int register, Location left, Location right) {
+		if (left.isRegister() && right.isRegister()) {
+			generateRegisterComputation(type, register, left.getRegister(), right.getRegister());
+		} else if(left.isRegister() && right.isStackSlot()) {
+			emitter.movs2r(sr, right.getStackSlot());
+			generateRegisterComputation(type, register, left.getRegister(), sr);
+		} else if(left.isStackSlot() && right.isRegister()) {
+			emitter.movs2r(sr, left.getStackSlot());
+			generateRegisterComputation(type, register, sr, right.getRegister());
+		} else {
+			emitter.movs2r(sr, left.getStackSlot());
+			emitter.movs2r(sr2, right.getStackSlot());
+			generateRegisterComputation(type, register, sr, sr2);
+		}	
+	}
+	private void generateRegisterComputation(ComputationOperatorType type, int desc, int left, int right) {
+		switch(type) {
+			case ADD:
+				emitter.add(desc, left, right);
+				break;
+			case MINUS:
+				emitter.sub(desc, left, right);
+				break;
+			case DIVIDE:
+				emitter.div(desc, left, right);
+			case TIMES:
+				emitter.mul(desc, left, right);
+			default:
+				throw new RuntimeException("Unexpected Computation Type");
+		}
+	}
+
+	@Override
+	public void visit(ConditionSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(ConditionalBranchSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(UnconditionalBranchSSAInstruction instruction) {
+		assembler.addBranchStub(code.size(), instruction.getBlock());
+		emitter.beq(zeroReg, 0);
+	}
+
+	@Override
+	public void visit(IndexSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(LoadSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(LoadVariableSSAInstruction instruction) {
+		addInstructionId(instruction);
+	}
+
+	@Override
+	public void visit(LoadArraySSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(StoreVariableSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(StoreSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+	
+	
+	/**
+	 * First Size parameters are in register, others are in the stack 
+	 */
+	@Override
+	public void visit(ParameterSSAInstruction instruction) {
+		Location dest = locations[instruction.getInstructionId()];
+		if(dest.isRegister()) {
+			emitter.ldw(dest.getRegister(), fp, (instruction.getInstructionId() + 1) * wordSize); 
+		} else {
+			emitter.ldw(sr, fp, (instruction.getInstructionId() + 1) * wordSize);
+			emitter.movr2s(dest.getStackSlot(), sr);
+		}
+	}
+
+	@Override
+	public void visit(CallSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(ReturnSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(ReturnValueSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(ReadSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(WriteSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+	@Override
+	public void visit(WritelnSSAInstruction instruction) {
+		addInstructionId(instruction);
+
+	}
+
+}

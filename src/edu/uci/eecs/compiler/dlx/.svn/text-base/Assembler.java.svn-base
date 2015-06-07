@@ -1,0 +1,46 @@
+package edu.uci.eecs.compiler.dlx;
+
+import edu.uci.eecs.compiler.model.Program;
+import edu.uci.eecs.compiler.representation.Block;
+import edu.uci.eecs.compiler.register.AllocatedMethod;
+
+import java.util.HashMap;
+
+public class Assembler {
+
+	private Program program;
+	private AllocatedMethod method;
+	private InstructionMapper mapper;
+	private GlobalDataLayout layout;
+	
+	/**
+	 * firstly generate branch code, then change the branch location later. 
+	 */
+	private HashMap<Integer, Block> branchStubBlockMap;
+	private HashMap<Block, Integer> blockPositionMap;
+	
+	public Assembler(Program program, AllocatedMethod method, GlobalDataLayout layout) {
+		this.program = program;
+		this.method = method;
+		this.layout = layout;
+		this.branchStubBlockMap = new HashMap<Integer, Block>();
+		this.blockPositionMap = new HashMap<Block, Integer>();
+		this.mapper = new InstructionMapper(this, layout, method.getLocations());
+	}
+	
+	
+	public void addBranchStub(Integer position, Block block){
+		this.branchStubBlockMap.put(position, block);
+	}
+	
+	/***
+	 * 
+	 * @param blockPositionMap
+	 */
+	private void patchBranchTarget() {
+		
+	}
+	
+	
+	
+}

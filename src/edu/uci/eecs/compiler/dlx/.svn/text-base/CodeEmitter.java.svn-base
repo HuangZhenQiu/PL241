@@ -1,0 +1,309 @@
+package edu.uci.eecs.compiler.dlx;
+
+import java.util.List;
+
+import edu.uci.eecs.compiler.register.Location;
+import static edu.uci.eecs.compiler.dlx.DLX.*;
+import static edu.uci.eecs.compiler.dlx.RegisterMap.*;
+
+public class CodeEmitter {
+	
+	static int wordSize = 4;
+	static int fp = framePointerReg;
+	static int sp = stackPointerReg;
+	static int sr = scratchReg;
+	
+	static Location srl = new Location(true, sr);
+	
+	private List<Integer> code;
+	
+	
+	public CodeEmitter(List<Integer> code) {
+		this.code = code;
+	}
+	
+	/*
+	 * high level moves
+	 */
+	void moveImmediate2Location(Location dest, int immediate) {
+		if (dest.isRegister()) {
+			movi2r(dest.getRegister(), immediate);
+		} else {
+			movi2s(dest.getStackSlot(), immediate);
+		}
+	}
+	
+	int move2Reg(Location source) {
+		
+		if (source.isRegister()) {
+			return source.getRegister();
+		} else {
+			movs2r(sr, source.getStackSlot());
+			return sr;
+		}
+	}
+	
+	void moveLocation2Location(Location dest, Location source) {
+		if (source.isRegister()) {
+			moveReg2Location(dest, source.getRegister());
+		} else {
+			assert source.isStackSlot();
+			moveStack2Location(dest, source.getStackSlot());
+		}
+	}
+	
+	void moveReg2Location(Location dest, int sourceReg) {
+		if (dest.isRegister()) {
+			movr2r(dest.getRegister(), sourceReg);
+		} else {
+			assert dest.isStackSlot();
+			movr2s(dest.getStackSlot(), sourceReg);
+		}
+	}
+	
+	void moveStack2Location(Location dest, int sourceStackSlot) {
+		if (dest.isRegister()) {
+			movs2r(sr, sourceStackSlot);
+			movr2r(dest.getRegister(), sr);
+		} else {
+			assert dest.isStackSlot();
+			movs2r(sr, sourceStackSlot);
+			movr2s(dest.getStackSlot(), sr);
+		}
+	}
+	
+	void pushLocation(Location source) {
+		if (source.isRegister()) {
+			psh(source.getRegister(), wordSize);
+		} else {
+			movs2r(sr, source.getStackSlot());
+			psh(sr, wordSize);
+		}
+	}
+	
+	void popLocation(Location dest) {
+		
+		if (dest.isRegister()) {
+			pop(dest.getRegister(), wordSize);
+		} else {
+			pop(sr, wordSize);
+			movr2s(dest.getStackSlot(), sr);
+		}
+	}
+	
+	/*
+	 * low level moves
+	 */
+	// reg to reg
+	void movr2r(int destinationReg, int sourceReg) {
+		addi(destinationReg, sourceReg, 0);
+	}
+	
+	// reg to stack slot
+	void movr2s(int destinationStackIndex, int sourceReg) {
+		stw(sourceReg, fp, getSlotOffsetFromFramePointer(destinationStackIndex));
+	}
+	
+	// stack slot to reg
+	void movs2r(int destinationReg, int sourceStackIndex) {
+		ldw(destinationReg, fp, getSlotOffsetFromFramePointer(sourceStackIndex));
+	}
+	
+	// immediate to reg
+	void movi2r(int destinationReg, int immediate) {
+		addi(destinationReg, zeroReg, immediate);
+	}
+	
+	// immediate to reg
+	void movi2s(int destinationStackSlot, int immediate) {
+		movi2r(sr, immediate);
+		stw(sr, fp, getSlotOffsetFromFramePointer(destinationStackSlot));
+	}
+	
+	int getSlotOffsetFromFramePointer(int stackSlot) {
+		return -stackSlot * 4 - 4;
+	}
+	
+	/*
+	 * other stuff
+	 */
+	void not(int operandReg) {
+		movi2r(sr, 0);
+		bic(operandReg, sr, operandReg);
+	}
+	
+	/*
+	 * arithmetic instructions
+	 */
+	void add(int destinationReg, int leftReg, int rightReg) {
+		emitWord(ADD, destinationReg, leftReg, rightReg);
+	}
+	
+	void sub(int destinationReg, int leftReg, int rightReg) {
+		emitWord(SUB, destinationReg, leftReg, rightReg);
+	}
+	
+	void mul(int destinationReg, int leftReg, int rightReg) {
+		emitWord(MUL, destinationReg, leftReg, rightReg);
+	}
+	
+	void div(int destinationReg, int leftReg, int rightReg) {
+		emitWord(DIV, destinationReg, leftReg, rightReg);
+	}
+	
+	void mod(int destinationReg, int leftReg, int rightReg) {
+		emitWord(MOD, destinationReg, leftReg, rightReg);
+	}
+	
+	void cmp(int destinationReg, int leftReg, int rightReg) {
+		emitWord(CMP, destinationReg, leftReg, rightReg);
+	}
+	
+	void bic(int destinationReg, int leftReg, int rightReg) {
+		emitWord(BIC, destinationReg, leftReg, rightReg);
+	}
+	
+	// immediate operand
+	void addi(int destinationReg, int leftReg, int rightImmediate) {
+		emitWord(ADDI, destinationReg, leftReg, rightImmediate);
+	}
+	
+	void subi(int destinationReg, int leftReg, int rightImmediate) {
+		emitWord(SUBI, destinationReg, leftReg, rightImmediate);
+	}
+	
+	void muli(int destinationReg, int leftReg, int rightImmediate) {
+		emitWord(MULI, destinationReg, leftReg, rightImmediate);
+	}
+	
+	void divi(int destinationReg, int leftReg, int rightImmediate) {
+		emitWord(DIVI, destinationReg, leftReg, rightImmediate);
+	}
+	
+	void modi(int destinationReg, int leftReg, int rightImmediate) {
+		emitWord(MODI, destinationReg, leftReg, rightImmediate);
+	}
+	
+	void cmpi(int destinationReg, int leftReg, int rightImmediate) {
+		emitWord(CMPI, destinationReg, leftReg, rightImmediate);
+	}
+	
+	/*
+	 * load/store instructions
+	 */
+	void ldw(int destinationReg, int addressReg, int offsetImmediate) {
+		emitWord(LDW, destinationReg, addressReg, offsetImmediate);
+	}
+	
+	void ldx(int destinationReg, int addressReg, int offsetReg) {
+		emitWord(LDX, destinationReg, addressReg, offsetReg);
+	}
+	
+	void pop(int destinationReg, int numOfByteToPop) {
+		emitWord(POP, destinationReg, sp, numOfByteToPop);
+	}
+	
+	void stw(int sourceReg, int addressReg, int offsetImmediate) {
+		emitWord(STW, sourceReg, addressReg, offsetImmediate);
+	}
+	
+	void stx(int sourceReg, int addressReg, int offsetReg) {
+		emitWord(STX, sourceReg, addressReg, offsetReg);
+	}
+	
+	void psh(int sourceReg, int numOfByteToPush) {
+		emitWord(PSH, sourceReg, sp, -numOfByteToPush);
+	}
+	
+	/*
+	 * control instructions
+	 */
+	void beq(int value, int offset) {
+		emitWord(BEQ, value, offset);
+	}
+	
+	void bne(int value, int offset) {
+		emitWord(BNE, value, offset);
+	}
+	
+	void blt(int value, int offset) {
+		emitWord(BLT, value, offset);
+	}
+	
+	void bge(int value, int offset) {
+		emitWord(BGE, value, offset);
+	}
+	
+	void ble(int value, int offset) {
+		emitWord(BLE, value, offset);
+	}
+	
+	void bgt(int value, int offset) {
+		emitWord(BGT, value, offset);
+	}
+	
+	void bsr(int relativePC) {
+		emitWord(BSR, relativePC);
+	}
+	
+	void jsr(int abosluteAddress) {
+		emitWord(JSR, abosluteAddress);
+	}
+	
+	void ret(int addressReg) {
+		emitWord(RET, addressReg);
+	}
+
+	/*
+	 * I/O
+	 */
+	void writeLocation(Location op) {
+		if (op.isRegister()) {
+			wrd(op.getRegister());
+		} else {
+			movs2r(sr, op.getStackSlot());
+			wrd(sr);
+		}
+	}
+	
+	void readLocation(Location dest) {
+		if (dest.isRegister()) {
+			rdd(dest.getRegister());
+		} else {
+			rdd(sr);
+			movr2s(dest.getStackSlot(), sr);
+		}
+	}
+	
+	void rdd(int destinationReg) {
+		emitWord(RDI, destinationReg);
+	}
+	
+	void wrd(int sourceReg) {
+		emitWord(WRD, sourceReg);
+	}
+	
+	void wrl() {
+		emitWord(WRL);
+	}
+	
+	/*
+	 * emitting instruction to code
+	 */
+	void emitWord(int op) {
+		code.add(assemble(op));
+	}
+	
+	void emitWord(int op, int arg0) {
+		code.add(assemble(op, arg0));
+	}
+	
+	void emitWord(int op, int arg0, int arg1) {
+		code.add(assemble(op, arg0, arg1));
+	}
+	
+	void emitWord(int op, int arg0, int arg1, int arg2) {
+		code.add(assemble(op, arg0, arg1, arg2));
+	}
+
+}

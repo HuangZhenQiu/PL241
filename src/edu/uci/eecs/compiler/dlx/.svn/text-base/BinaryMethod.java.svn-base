@@ -1,0 +1,12 @@
+package edu.uci.eecs.compiler.dlx;
+
+import edu.uci.eecs.compiler.model.Method;
+
+public class BinaryMethod {
+
+	private Method method;
+	//how many parameters are allocated into stack
+	private int stackLots;
+	private int[] unLinkedCode;
+	
+}

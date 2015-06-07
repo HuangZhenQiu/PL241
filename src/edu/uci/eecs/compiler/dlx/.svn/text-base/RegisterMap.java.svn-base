@@ -1,0 +1,124 @@
+package edu.uci.eecs.compiler.dlx;
+
+public class RegisterMap {
+	
+	public static final int R0	= 0;
+	public static final int R1	= 1;
+	public static final int R2	= 2;
+	public static final int R3	= 3;
+	public static final int R4	= 4;
+	public static final int R5	= 5;
+	public static final int R6	= 6;
+	public static final int R7	= 7;
+	public static final int R8	= 8;
+	public static final int R9	= 9;
+	public static final int R10	= 10;
+	public static final int R11	= 11;
+	public static final int R12	= 12;
+	public static final int R13	= 13;
+	public static final int R14	= 14;
+	public static final int R15	= 15;
+	public static final int R16	= 16;
+	public static final int R17	= 17;
+	public static final int R18	= 18;
+	public static final int R19	= 19;
+	public static final int R20	= 20;
+	public static final int R21	= 21;
+	public static final int R22	= 22;
+	public static final int R23	= 23;
+	public static final int R24	= 24;
+	public static final int R25	= 25;
+	public static final int R26	= 26;
+	public static final int R27	= 27;
+	public static final int R28	= 28;
+	public static final int R29	= 29;
+	public static final int R30	= 30;
+	public static final int R31	= 31;
+	
+	private static final int numOfRegs = 32;
+	
+	public static final int[] allocatables = {
+//		R1
+		R1, R2, R3, R4, R5, R6
+//		R7, R8, R9, R10,
+//		R11, R12, R13, R14, R15, R16, R17, R18, R19, R20,
+//		R21, R22, R23, R24, R25, R26, R27
+	};
+	
+	// so all the allocatables are caller saved
+	public static final int[] callerSaveRegs = allocatables;
+	
+	static final int zeroReg 			= R0;
+	static final int returnAddressReg 	= R31;
+	static final int maxAddressReg 		= R30;
+	static final int stackPointerReg	= R29;
+	static final int framePointerReg	= R28;
+	static final int staticAddressReg 	= R27;
+	static final int scratchReg 		= R26;
+	static final int secondScratchReg 	= allocatables[allocatables.length - 1];
+	
+	private static final String[] names = new String[numOfRegs];
+	
+	static {
+		def(R0, "R0");
+		def(R1, "R1");
+		def(R2, "R2");
+		def(R3, "R3");
+		def(R4, "R4");
+		def(R5, "R5");
+		def(R6, "R6");
+		def(R7, "R7");
+		def(R8, "R8");
+		def(R9, "R9");
+		def(R10, "R10");
+		def(R11, "R11");
+		def(R12, "R12");
+		def(R13, "R13");
+		def(R14, "R14");
+		def(R15, "R15");
+		def(R16, "R16");
+		def(R17, "R17");
+		def(R18, "R18");
+		def(R19, "R19");
+		def(R20, "R20");
+		def(R21, "R21");
+		def(R22, "R22");
+		def(R23, "R23");
+		def(R24, "R24");
+		def(R25, "R25");
+		def(R26, "R26");
+		def(R27, "R27");
+		def(R28, "R28");
+		def(R29, "R29");
+		def(R30, "R30");
+		def(R31, "R31");
+	}
+	
+	private static void def(int reg, String name) {
+		names[reg] = name;
+	}
+	
+	public static String nameOf(int reg) {
+		if (reg < 0 && reg >= numOfRegs) {
+            return "unknown";
+        }
+        String name;
+        try {
+            name = names[reg];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return "unknown";
+        }
+        if (name == null) {
+            return "unknown";
+        }
+        return name;
+	}
+
+	public int[] allocatable() {
+		return allocatables;
+	}
+	
+	public static String stackName(int stackSlot) {
+		return "S" + stackSlot;
+	}
+}

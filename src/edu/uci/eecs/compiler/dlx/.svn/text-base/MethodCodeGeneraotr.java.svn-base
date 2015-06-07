@@ -1,0 +1,51 @@
+package edu.uci.eecs.compiler.dlx;
+
+import java.util.HashMap;
+
+import edu.uci.eecs.compiler.model.Program;
+import edu.uci.eecs.compiler.representation.Block;
+import edu.uci.eecs.compiler.representation.BlockBaseVisitor;
+import edu.uci.eecs.compiler.representation.Block.EntryBlock;
+import edu.uci.eecs.compiler.representation.Block.ExitBlock;
+import edu.uci.eecs.compiler.representation.Block.JoinBlock;
+import edu.uci.eecs.compiler.register.AllocatedMethod;
+
+public class MethodCodeGeneraotr extends BlockBaseVisitor {
+	private Program program;
+	private AllocatedMethod method;
+	private GlobalDataLayout layout;
+	private Assembler assembler;
+	
+	public MethodCodeGeneraotr(Program program, AllocatedMethod method, GlobalDataLayout layout) {
+		this.program = program;
+		this.method = method;
+		this.layout = layout;
+		this.assembler = new Assembler(program, method, layout);
+	}
+	
+		
+	@Override
+	public void visit(Block block) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visit(EntryBlock block) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visit(JoinBlock block) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void visit(ExitBlock block) {
+		// TODO Auto-generated method stub
+
+	}
+
+}
